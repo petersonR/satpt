@@ -46,6 +46,7 @@ print.satpt <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   )
 
   # Printing results ####
+  cat(saturation_headline(x), "\n\n", sep = "")
   cat("Analysis based on:", x$which_saturation, "\n")
   cat(
     "Saturation achieved? ",
@@ -59,4 +60,30 @@ print.satpt <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("Overall Sample Proportions and Standard Errors\n")
   cat("==============================================\n")
   print(x = print_table, ...)
+}
+
+# Headline sentence(s) explaining the result in CI half-width / percentage-
+# point terms a non-statistician can act on. Used at the top of print.satpt
+# and print.satpt_survey output.
+saturation_headline <- function(x) {
+  pp <- function(v) format(round(v * 100, digits = 1L), nsmall = 1L)
+  half_width <- stats::qnorm(p = 0.975) * max(x$total$se)
+  threshold_hw <- stats::qnorm(p = 0.975) * x$threshold
+  if (x$saturation) {
+    paste0(
+      "Saturation achieved for ", x$which_saturation, ".\n",
+      "With ", x$n, " responses, the largest 95% CI half-width is ",
+      "±", pp(half_width), " percentage points (within the ",
+      "±", pp(threshold_hw), " pp threshold)."
+    )
+  } else {
+    paste0(
+      "Saturation not yet achieved for ", x$which_saturation, ".\n",
+      "With ", x$n, " responses, the largest 95% CI half-width is ",
+      "±", pp(half_width), " percentage points (threshold ",
+      "±", pp(threshold_hw), " pp).\n",
+      "About ", x$n_to_saturation,
+      " more responses needed (assuming current proportions hold)."
+    )
+  }
 }

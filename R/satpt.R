@@ -22,6 +22,14 @@
 #' of `y` variable and the second entry should be name of `by` variable. If
 #' `dimnames` is a named vector, then order of the values does NOT matter, as
 #' long the elements are named with `"y"` and `"by"`. Default is `NULL`.
+#' @param select_all_apply Logical that disambiguates how a multi-column `y`
+#' is interpreted. `TRUE` says you intend the columns to be the response items
+#' of one *select-all-that-apply* question; `FALSE` says they should be a
+#' single multiple-choice question (and a multi-column `y` is therefore an
+#' error). The default `NULL` warns when `y` has more than one column,
+#' because a wide data.frame of separate questions is a common mistake.
+#' Pass [satpt::satpt_survey()] when you want to analyze each column as its
+#' own question instead. Single-column `y` is unaffected.
 #' @param ... Additional arguments passed to [stats::chisq.test()] or
 #' [stats::fisher.test()] for more control over the test for independence.
 #' `x` and `y` arguments from [stats::chisq.test()] or [stats::fisher.test()]
@@ -87,7 +95,7 @@
 #' responses that have the largest standard error (i.e., a sample proportion
 #' closest to 0.5) will be used to determine saturation of all responses.
 #'
-#' @return An object with `S3` class `"satpt"` containing 12 elements. The
+#' @return An object with `S3` class `"satpt"` containing 13 elements. The
 #' return elements in a `"satpt"` object are based on the response item that
 #' had the largest standard error. The `which_saturation` returned value
 #' indicates which response item had the largest standard error. This nature
@@ -120,6 +128,11 @@
 #'  or [stats::fisher.test()] containing the results from the test for
 #'  independence. `NULL` when `by` is not specified.}
 #'  \item{`n`}{Total number of observations with a response provided.}
+#'  \item{`n_to_saturation`}{Approximate number of additional responses
+#'  required for the largest standard error to fall to or below `threshold`,
+#'  assuming the current sample proportions and (for pooled SE) the wave
+#'  structure are preserved as more responses arrive. `0` when saturation
+#'  has already been achieved.}
 #'  \item{`total`}{A `data.frame` object with 4 variables describing
 #'  the overall collected sample. The `categories` variable provides the unique
 #'  categories listed in `y`. While `counts`, `phat`, and `se` provide the
@@ -176,6 +189,7 @@ satpt <- function(
   alpha = 0.05,
   threshold = 0.025,
   dimnames = NULL,
+  select_all_apply = NULL,
   ...
 ) {
   # Capture variable names from unevaluated arguments ####
@@ -189,6 +203,9 @@ satpt <- function(
   # Coerce y and by to consistent types ####
   y <- coerce_responses(y, var_name = var_name)
   by <- if (!missing(by)) coerce_grouping(by) else NULL
+
+  # Guard against accidental select-all-apply interpretation ####
+  check_select_all_apply(y = y, select_all_apply = select_all_apply)
 
   # Validate scalar arguments ####
   validate_args(
@@ -268,6 +285,7 @@ satpt <- function(
     FUN = function(tt) sum(tt$counts),
     FUN.VALUE = integer(1)
   )
+  n_picked <- unname(total_obs[which_saturation])
   out <- list(
     threshold = threshold,
     saturation = saturation,
@@ -278,7 +296,12 @@ satpt <- function(
     pooled_se = if (has_test) pooled_se[[which_saturation]] else NULL,
     alpha = alpha,
     test = if (has_test) test[[which_saturation]] else NULL,
-    n = unname(total_obs[which_saturation]),
+    n = n_picked,
+    n_to_saturation = calc_n_to_saturation(
+      max_se = max(max_se),
+      n = n_picked,
+      threshold = threshold
+    ),
     total = total[[which_saturation]],
     hindex = if (!is.null(hindex)) hindex[[which_saturation]] else NULL
   )

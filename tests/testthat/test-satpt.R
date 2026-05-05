@@ -39,6 +39,26 @@ test_that("which_saturation echoes the user-supplied y variable name", {
   expect_equal(res$which_saturation, "responses1")
 })
 
+test_that("n_to_saturation is 0 when saturation has been reached", {
+  set.seed(1)
+  d <- satpt::simulate(n = 1, size = 400, prob = c(0.5, 0.5))
+  res <- satpt::satpt(y = d$responses1)
+  expect_true(res$saturation)
+  expect_equal(res$n_to_saturation, 0L)
+})
+
+test_that("n_to_saturation matches the n*(SE/threshold)^2 projection", {
+  # With N=100 at p=0.5 and threshold=0.025: SE=0.05, k=(0.05/0.025)^2=4,
+  # so we need 4*N = 400 responses total -> 300 more.
+  set.seed(1)
+  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  res <- satpt::satpt(y = d$responses1)
+  expect_false(res$saturation)
+  # phat from the random sample is close to but not exactly 0.5; recompute.
+  expected <- ceiling(res$n * (max(res$total$se) / res$threshold)^2) - res$n
+  expect_equal(res$n_to_saturation, as.integer(expected))
+})
+
 test_that("loosening the threshold flips a non-saturated case to saturated", {
   set.seed(1)
   d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))

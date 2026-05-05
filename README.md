@@ -45,6 +45,9 @@ res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
 print(res)
 ```
 
+    #> Saturation achieved for q2.
+    #> With 640 responses, the largest 95% CI half-width is ±3.7 percentage points (within the ±4.9 pp threshold).
+    #> 
     #> Analysis based on: q2 
     #> Saturation achieved?  Yes 
     #> 

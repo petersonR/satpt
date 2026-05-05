@@ -53,6 +53,36 @@ coerce_grouping <- function(by) {
   result
 }
 
+# Disambiguate multi-column y. NULL warns (the common-mistake case),
+# TRUE silently accepts (intentional select-all-apply), FALSE errors
+# (the user meant separate questions, which would produce wrong results).
+check_select_all_apply <- function(y, select_all_apply) {
+  if (ncol(y) < 2L) {
+    return(invisible(NULL))
+  }
+  if (isTRUE(select_all_apply)) {
+    return(invisible(NULL))
+  }
+  if (isFALSE(select_all_apply)) {
+    stop(
+      "y has ", ncol(y), " columns but select_all_apply = FALSE.\n",
+      "If each column is a separate survey question, use satpt_survey()",
+      " to analyze them individually.\n",
+      "If the columns are the response items of one select-all-that-apply",
+      " question, set select_all_apply = TRUE."
+    )
+  }
+  warning(
+    "y has ", ncol(y), " columns; satpt() will treat them as response",
+    " items of one select-all-that-apply question.\n",
+    "  - If each column is a separate question, use satpt_survey().\n",
+    "  - If this is intentional, pass select_all_apply = TRUE to silence",
+    " this warning.",
+    call. = FALSE
+  )
+  invisible(NULL)
+}
+
 validate_alpha <- function(alpha) {
   if (!is.numeric(x = alpha) || alpha >= 1 || alpha <= 0) {
     stop("alpha must be numeric between 0 and 1.")
@@ -215,6 +245,19 @@ calc_total <- function(counts_mat, test, se_mat, pooled) {
     out$se <- as.vector(se_mat)
   }
   out
+}
+
+# Approximate count of additional responses needed to bring max(SE) under
+# the saturation threshold, assuming current proportions hold. Both the
+# unpooled and pooled SE shrink as 1/sqrt(N) under proportional extension
+# of the sample, so the same scaling formula applies to both regimes.
+# Returns 0L when saturation is already achieved.
+calc_n_to_saturation <- function(max_se, n, threshold) {
+  if (max_se <= threshold) {
+    return(0L)
+  }
+  required <- ceiling(n * (max_se / threshold)^2)
+  as.integer(required - n)
 }
 
 # Heterogeneity index (mean absolute deviation of wave proportions from

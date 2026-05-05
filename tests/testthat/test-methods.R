@@ -42,6 +42,29 @@ test_that("print.satpt reports saturation status", {
   expect_true(any(grepl("Saturation achieved", out)))
 })
 
+test_that("print.satpt headline reports CI half-width when saturated", {
+  set.seed(1)
+  d <- satpt::simulate(n = 1, size = 400, prob = c(0.5, 0.5))
+  res <- satpt::satpt(y = d$responses1)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("Saturation achieved for", out)))
+  expect_true(any(grepl("percentage points", out)))
+  expect_true(any(grepl("within the", out)))
+})
+
+test_that("print.satpt headline reports n_to_saturation when not saturated", {
+  set.seed(1)
+  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  res <- satpt::satpt(y = d$responses1)
+  expect_gt(res$n_to_saturation, 0L)
+  out <- capture.output(print(res))
+  expect_true(any(grepl("Saturation not yet achieved", out)))
+  expect_true(any(grepl(
+    paste0("About ", res$n_to_saturation, " more responses needed"),
+    out
+  )))
+})
+
 test_that("print.summary.satpt prints hindex when by is supplied", {
   d <- example3_data()
   res <- satpt::satpt(y = d$responses1, by = d$period)

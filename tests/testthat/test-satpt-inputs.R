@@ -42,7 +42,7 @@ test_that("y as an unequal-length list is padded and dispatched", {
     item_a = sample(c("yes", "no"), 100, replace = TRUE),
     item_b = sample(c("yes", "no"), 80, replace = TRUE)
   )
-  res <- satpt::satpt(y = d)
+  res <- satpt::satpt(y = d, select_all_apply = TRUE)
   expect_s3_class(res, "satpt")
   expect_true(res$which_saturation %in% c("item_a", "item_b"))
 })
@@ -53,7 +53,7 @@ test_that("which_saturation picks the column nearest p = 0.5", {
     item_split = c(rep("yes", 80), rep("no", 20)),
     stringsAsFactors = FALSE
   )
-  res <- satpt::satpt(y = d)
+  res <- satpt::satpt(y = d, select_all_apply = TRUE)
   expect_equal(res$which_saturation, "item_loose")
 })
 
@@ -64,7 +64,7 @@ test_that("which_saturation can shift between items as more data arrives", {
     item_b = c(rep("yes", 50), rep("no", 50)),
     stringsAsFactors = FALSE
   )
-  res_small <- satpt::satpt(y = d_small)
+  res_small <- satpt::satpt(y = d_small, select_all_apply = TRUE)
   expect_equal(res_small$which_saturation, "item_b")
 
   # After wave 2: item_a holds at 0.6 while item_b drifts to 0.75 ->
@@ -74,7 +74,7 @@ test_that("which_saturation can shift between items as more data arrives", {
     item_b = c(rep("yes", 50), rep("no", 50), rep("yes", 100)),
     stringsAsFactors = FALSE
   )
-  res_full <- satpt::satpt(y = d_full)
+  res_full <- satpt::satpt(y = d_full, select_all_apply = TRUE)
   expect_equal(res_full$which_saturation, "item_a")
 })
 
@@ -96,4 +96,44 @@ test_that("dimnames as a named c(y, by) vector is order-insensitive", {
   )
   expect_match(names(dimnames(res$counts))[1L], "Wave")
   expect_match(names(dimnames(res$counts))[2L], "Response")
+})
+
+test_that("multi-column y warns by default", {
+  d <- data.frame(
+    q1 = c(rep("yes", 50), rep("no", 50)),
+    q2 = c(rep("yes", 50), rep("no", 50)),
+    stringsAsFactors = FALSE
+  )
+  expect_warning(
+    satpt::satpt(y = d),
+    "select-all-that-apply"
+  )
+})
+
+test_that("select_all_apply = TRUE silences the multi-column warning", {
+  d <- data.frame(
+    q1 = c(rep("yes", 50), rep("no", 50)),
+    q2 = c(rep("yes", 50), rep("no", 50)),
+    stringsAsFactors = FALSE
+  )
+  expect_silent(satpt::satpt(y = d, select_all_apply = TRUE))
+})
+
+test_that("select_all_apply = FALSE errors on multi-column y", {
+  d <- data.frame(
+    q1 = c(rep("yes", 50), rep("no", 50)),
+    q2 = c(rep("yes", 50), rep("no", 50)),
+    stringsAsFactors = FALSE
+  )
+  expect_error(
+    satpt::satpt(y = d, select_all_apply = FALSE),
+    "satpt_survey"
+  )
+})
+
+test_that("single-column y is unaffected by the guard", {
+  set.seed(1)
+  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  expect_silent(satpt::satpt(y = d$responses1))
+  expect_silent(satpt::satpt(y = d$responses1, select_all_apply = FALSE))
 })

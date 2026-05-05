@@ -11,6 +11,7 @@ satpt(
   alpha = 0.05,
   threshold = 0.025,
   dimnames = NULL,
+  select_all_apply = NULL,
   ...
 )
 }
@@ -40,6 +41,15 @@ of \code{y} variable and the second entry should be name of \code{by} variable. 
 \code{dimnames} is a named vector, then order of the values does NOT matter, as
 long the elements are named with \code{"y"} and \code{"by"}. Default is \code{NULL}.}
 
+\item{select_all_apply}{Logical that disambiguates how a multi-column \code{y}
+is interpreted. \code{TRUE} says you intend the columns to be the response items
+of one \emph{select-all-that-apply} question; \code{FALSE} says they should be a
+single multiple-choice question (and a multi-column \code{y} is therefore an
+error). The default \code{NULL} warns when \code{y} has more than one column,
+because a wide data.frame of separate questions is a common mistake.
+Pass \code{\link[=satpt_survey]{satpt_survey()}} when you want to analyze each column as its
+own question instead. Single-column \code{y} is unaffected.}
+
 \item{...}{Additional arguments passed to \code{\link[stats:chisq.test]{stats::chisq.test()}} or
 \code{\link[stats:fisher.test]{stats::fisher.test()}} for more control over the test for independence.
 \code{x} and \code{y} arguments from \code{\link[stats:chisq.test]{stats::chisq.test()}} or \code{\link[stats:fisher.test]{stats::fisher.test()}}
@@ -47,7 +57,7 @@ should \strong{not} be spectified because the \code{by} and \code{y} from argume
 will create a contingency matrix to perform the test of independence on.}
 }
 \value{
-An object with \code{S3} class \code{"satpt"} containing 12 elements. The
+An object with \code{S3} class \code{"satpt"} containing 13 elements. The
 return elements in a \code{"satpt"} object are based on the response item that
 had the largest standard error. The \code{which_saturation} returned value
 indicates which response item had the largest standard error. This nature
@@ -80,6 +90,11 @@ not specified.}
 or \code{\link[stats:fisher.test]{stats::fisher.test()}} containing the results from the test for
 independence. \code{NULL} when \code{by} is not specified.}
 \item{\code{n}}{Total number of observations with a response provided.}
+\item{\code{n_to_saturation}}{Approximate number of additional responses
+required for the largest standard error to fall to or below \code{threshold},
+assuming the current sample proportions and (for pooled SE) the wave
+structure are preserved as more responses arrive. \code{0} when saturation
+has already been achieved.}
 \item{\code{total}}{A \code{data.frame} object with 4 variables describing
 the overall collected sample. The \code{categories} variable provides the unique
 categories listed in \code{y}. While \code{counts}, \code{phat}, and \code{se} provide the
