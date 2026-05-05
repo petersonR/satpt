@@ -55,84 +55,68 @@
 #'
 #' @export
 simulate <- function(n, size, prob, categories = NULL) {
-  # checking parameter types ####
-  if (n %% floor(n) != 0) {
-    stop("n must be an integer specifying number of simulations.")
-  }
-  if (all(size %% floor(size) != 0)) {
-    stop("size must be integer valued specifying the sample size.")
-  }
-  if (!(all(prob >= 0) || all(prob <= 1))) {
-    stop("probs must contain numeric values between 0 and 1.")
-  }
+  validate_simulate_args(n = n, size = size, prob = prob)
 
-  # Generating simulated data sets ####
+  prob <- as_prob_matrix(prob = prob, size = size)
+  validate_prob_rows(prob = prob)
+  categories <- resolve_categories(categories = categories, prob = prob)
 
-  ## Forcing response category probabilities to be a matrix ####
-  if (!is.matrix(prob)) {
-    prob <- matrix(
-      data = prob,
-      nrow = length(size), ncol = length(prob) / length(size),
-      byrow = TRUE
-    )
-  } else {
-    prob <- prob
-  }
-
-  ### Checking that probabilities sum to 1 ####
-  sum_to_one <- apply(
-    X = prob,
-    MARGIN = 1,
-    FUN = function(x) {
-      test <- sum(x)
-      test <- test == 1
-      return(test)
-    }
-  )
-
-  if (!all(sum_to_one)) {
-    stop("Probabilities in prob must sum to one for each size.")
-  }
-
-  ### Checking categories listed match number of probabilities ####
-  if (!is.null(categories)) {
-    if (length(categories) != ncol(prob)) {
-      stop("Length of categories must be length of probability classes.")
-    }
-  }
-
-  ## Generating data ####
-
-  ### Initialzing ####
   data <- vector(mode = "list", length = nrow(prob))
-
-  ### Simulating ####
   for (k in seq_along(size)) {
-    #### Creating temporary data set ####
     tmp <- data.frame(matrix(data = NA, nrow = size[k], ncol = n + 1))
     colnames(tmp) <- c("period", paste0("responses", seq_len(n)))
-
-    #### Assigning data collection period indicator #####
     tmp$period <- k
 
-    #### Obtaining sample counts for categories ####
     counts <- stats::rmultinom(n = n, size = size[k], prob = prob[k, ])
-
-    #### Assigning categories ####
-    if (is.null(categories)) {
-      categories <- paste0("Category ", seq_len(nrow(counts)))
-    } else {
-      categories <- categories
-    }
     for (j in 2:ncol(tmp)) {
       tmp[, j] <- rep(x = categories, times = counts[, (j - 1)])
     }
     data[[k]] <- tmp
   }
 
-  ### Combining data to one data.frame ####
-  data <- do.call("rbind", data)
+  do.call("rbind", data)
+}
 
-  # Output ####
-  return(data)
+# Internal helpers below.
+
+validate_simulate_args <- function(n, size, prob) {
+  if (n %% floor(n) != 0) {
+    stop("n must be an integer specifying number of simulations.")
+  }
+  if (any(size %% floor(size) != 0)) {
+    stop("size must be integer valued specifying the sample size.")
+  }
+  if (!is.numeric(prob) || any(prob < 0) || any(prob > 1)) {
+    stop("prob must contain numeric values between 0 and 1.")
+  }
+  invisible(NULL)
+}
+
+as_prob_matrix <- function(prob, size) {
+  if (is.matrix(prob)) {
+    return(prob)
+  }
+  matrix(
+    data = prob,
+    nrow = length(size), ncol = length(prob) / length(size),
+    byrow = TRUE
+  )
+}
+
+validate_prob_rows <- function(prob) {
+  row_sums <- rowSums(prob)
+  if (!isTRUE(all.equal(row_sums, rep(1, length(row_sums))))) {
+    stop("Probabilities in prob must sum to one for each size.")
+  }
+  invisible(NULL)
+}
+
+resolve_categories <- function(categories, prob) {
+  if (is.null(categories)) {
+    return(paste0("Category ", seq_len(ncol(prob))))
+  }
+  if (length(categories) != ncol(prob)) {
+    stop("Length of categories must be length of probability classes.")
+  }
+  categories
 }

@@ -29,8 +29,11 @@ char_matrix(y, cname = NULL)
 include \code{vector}, \code{factor}, \code{matrix}, \code{data.frame}, \code{data.table}, \code{tibble},
 or \code{list}.}
 
-\item{cname}{A character vector of column names. Default is \code{NULL}, which
-means \code{factor}s and \code{atomic} vectors will not be assigned a column name.}
+\item{cname}{A character vector of column names whose length must match the
+number of output columns. Default is \code{NULL}, which means \code{factor}s and
+\code{atomic} vectors will not be assigned a column name and \code{list}s,
+\code{data.frame}s, and \code{matrix} inputs will fall back to their existing column
+names (or synthesized \code{V1}, \code{V2}, ... names for unnamed lists).}
 }
 \value{
 A \code{character} matrix with meaningful column names when possible.

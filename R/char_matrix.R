@@ -7,8 +7,11 @@
 #' @param y An object to be converted to a character matrix. Acceptable types
 #' include `vector`, `factor`, `matrix`, `data.frame`, `data.table`, `tibble`,
 #' or `list`.
-#' @param cname A character vector of column names. Default is `NULL`, which
-#' means `factor`s and `atomic` vectors will not be assigned a column name.
+#' @param cname A character vector of column names whose length must match the
+#' number of output columns. Default is `NULL`, which means `factor`s and
+#' `atomic` vectors will not be assigned a column name and `list`s,
+#' `data.frame`s, and `matrix` inputs will fall back to their existing column
+#' names (or synthesized `V1`, `V2`, ... names for unnamed lists).
 #'
 #' @details The transformation of the *R* objects into a character matrix is
 #' done through [base::as.character] and using [base::as.matrix] when the
@@ -35,7 +38,13 @@ char_matrix <- function(y, cname = NULL) {
 #' @rdname char_matrix
 char_matrix.default <- function(y, cname = NULL) {
   out <- matrix(data = as.character(x = y), ncol = 1)
-  if (!is.null(cname) && length(cname) == 1) {
+  if (!is.null(cname)) {
+    if (length(cname) != ncol(out)) {
+      stop(
+        "cname must have length ", ncol(out),
+        " (one name per output column)."
+      )
+    }
     colnames(x = out) <- cname
   }
 
@@ -72,7 +81,13 @@ char_matrix.list <- function(y, cname = NULL) {
 
   # Creating character matrix ####
   out <- do.call(what = "cbind", args = padded)
-  if (!is.null(cname) && length(cname) == ncol(out)) {
+  if (!is.null(cname)) {
+    if (length(cname) != ncol(out)) {
+      stop(
+        "cname must have length ", ncol(out),
+        " (one name per output column)."
+      )
+    }
     colnames(x = out) <- cname
   } else {
     colnames(x = out) <- names(x = y) %||% paste0("V", seq_along(padded))
@@ -94,7 +109,13 @@ char_matrix.data.frame <- function(y, cname = NULL) {
   )
 
   # Assigning name ####
-  if (!is.null(cname) && length(cname) == ncol(out)) {
+  if (!is.null(cname)) {
+    if (length(cname) != ncol(out)) {
+      stop(
+        "cname must have length ", ncol(out),
+        " (one name per output column)."
+      )
+    }
     colnames(x = out) <- cname
   } else {
     colnames(x = out) <- colnames(x = y)
@@ -121,7 +142,13 @@ char_matrix.matrix <- function(y, cname = NULL) {
   out <- apply(X = y, MARGIN = c(1, 2), FUN = as.character)
 
   # Assigning names ####
-  if (!is.null(cname) && length(cname) == ncol(out)) {
+  if (!is.null(cname)) {
+    if (length(cname) != ncol(out)) {
+      stop(
+        "cname must have length ", ncol(out),
+        " (one name per output column)."
+      )
+    }
     colnames(x = out) <- cname
   } else {
     colnames(x = out) <- colnames(x = y)

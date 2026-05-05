@@ -62,8 +62,8 @@ data(bacteremia)
 }
 \description{
 Responses to survey questions about infectious disease
-consultation for \emph{staphylococcus aureus} bacteremia (SAB) presented to medical
-personnel who are members of EIN.
+consultation for \emph{staphylococcus aureus} bacteremia (SAB) presented to
+medical personnel who are members of EIN.
 }
 \details{
 Questions 1, 2, 3, 5, and 6 are clinical case study questions, where the

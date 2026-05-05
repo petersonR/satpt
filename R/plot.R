@@ -36,7 +36,6 @@ plot.satpt <- function(x, threshold = TRUE, ...) {
   }
 
   # Specifying default plotting parameters ####
-  x$total
 
   ## Determining limit of y-axis ####
   se_max <- signif(

@@ -73,11 +73,12 @@ proportions for the observed contigency table (\code{counts}).}
 \item{\code{se}}{A \code{matrix} object containing the standard errors for
 the calculated sample proportions (\code{phat}).}
 \item{\code{pooled_se}}{A logical value indicating whether pooled standard errors
-were calculated due to the presence of response bias.}
+were calculated due to the presence of response bias. \code{NULL} when \code{by} is
+not specified.}
 \item{\code{alpha}}{Significance level for the test for independence.}
 \item{\code{test}}{A \code{htest} object produced by \code{\link[stats:chisq.test]{stats::chisq.test()}}
 or \code{\link[stats:fisher.test]{stats::fisher.test()}} containing the results from the test for
-independence.}
+independence. \code{NULL} when \code{by} is not specified.}
 \item{\code{n}}{Total number of observations with a response provided.}
 \item{\code{total}}{A \code{data.frame} object with 4 variables describing
 the overall collected sample. The \code{categories} variable provides the unique
@@ -87,7 +88,8 @@ categories, respectively. The standard errors reported for the overall
 sample proportions are calculated based on the presence of response bias,
 which is detailed above.}
 \item{\code{hindex}}{A vector of heterogeneity index values for the sample
-proportions calculated by mean absolute deviation.}
+proportions calculated by mean absolute deviation. \code{NULL} when \code{by} is
+not specified.}
 }
 }
 \description{
@@ -155,9 +157,10 @@ responses that have the largest standard error (i.e., a sample proportion
 closest to 0.5) will be used to determine saturation of all responses.
 }
 \note{
-The returned \code{satpt} object will contain \code{NULL} values for \code{test} and
-\code{hindex} when \code{by} is not specified. This is done because \code{satpt} assumes
-\code{by} is only specified when the data is collected in intervals.
+The returned \code{satpt} object will contain \code{NULL} values for \code{test},
+\code{pooled_se}, and \code{hindex} when \code{by} is not specified. This is done because
+\code{satpt} assumes \code{by} is only specified when the data is collected in
+intervals.
 }
 \examples{
 data(diagnoses)

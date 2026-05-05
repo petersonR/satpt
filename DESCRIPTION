@@ -17,7 +17,7 @@ Description: Identify the saturation point of multinomial responses from a surve
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Imports: 
     graphics,
     methods,
@@ -25,9 +25,11 @@ Imports:
 Depends: 
     R (>= 3.5.0)
 LazyData: true
-Suggests: 
+Suggests:
     knitr,
     rmarkdown,
-    kableExtra
+    kableExtra,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://deboonstra.github.io/satpt/, https://github.com/deboonstra/satpt

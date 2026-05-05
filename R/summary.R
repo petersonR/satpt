@@ -64,9 +64,10 @@
 #' @rdname summary.satpt
 #' @export
 summary.satpt <- function(
-    object,
-    digits = max(3, getOption("digits") - 3),
-    ...) {
+  object,
+  digits = max(3, getOption("digits") - 3),
+  ...
+) {
   # Check object type ####
   if (!methods::is(object, "satpt")) {
     stop("object must be of satpt type.")
@@ -184,21 +185,18 @@ summary.satpt <- function(
   }
 
   # Output ####
-  out <- list()
-  out$threshold <- object$threshold
-  out$saturation <- ifelse(test = object$saturation, yes = "Yes", no = "No")
-  out$which_saturation <- object$which_saturation
-  out$n <- object$n
-  out$phat <- phat
-  out$se <- se
-  out$pooled_se <- object$pooled_se
-  out$alpha <- object$alpha
-  if (!is.null(object$test)) {
-    out$test <- object$test
-  } else {
-    out$test <- object$test
-  }
-  out$hindex <- hindex
+  out <- list(
+    threshold = object$threshold,
+    saturation = ifelse(test = object$saturation, yes = "Yes", no = "No"),
+    which_saturation = object$which_saturation,
+    n = object$n,
+    phat = phat,
+    se = se,
+    pooled_se = object$pooled_se,
+    alpha = object$alpha,
+    test = object$test,
+    hindex = hindex
+  )
   return(structure(out, class = "summary.satpt"))
 }
 
