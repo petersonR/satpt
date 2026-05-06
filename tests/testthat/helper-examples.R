@@ -2,12 +2,11 @@
 # Boonstra et al. (2025) manuscript. The probability vectors below preserve
 # the qualitative behaviour described in the paper (Example 1 saturates on
 # wave 1; Example 2 has no response bias; Example 3 has strong response
-# bias) and use values that sum to exactly 1 in floating point so they
-# survive `simulate()`'s strict equality check on the row sums of `prob`.
+# bias).
 
 example1_data <- function(seed = 123) {
   set.seed(seed)
-  satpt::simulate(
+  simulate_mult(
     n = 1,
     size = 350,
     prob = rep(0.2, 5),
@@ -17,7 +16,7 @@ example1_data <- function(seed = 123) {
 
 example2_data <- function(seed = 123) {
   set.seed(seed)
-  satpt::simulate(
+  simulate_mult(
     n = 1,
     size = c(175, 175),
     prob = rep(0.2, 10),
@@ -37,7 +36,7 @@ example3_prob <- function() {
 
 example3_data <- function(seed = 123) {
   set.seed(seed)
-  satpt::simulate(
+  simulate_mult(
     n = 1,
     size = c(175, 175),
     prob = example3_prob(),

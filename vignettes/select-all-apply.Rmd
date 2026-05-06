@@ -46,7 +46,7 @@ From the original survey, [*Difficult Diagnoses*](https://ein.idsociety.org/surv
 To analyze each response item separately we need to convert this single string column into a `data.frame` with one indicator column per response. The exported [`split_select_all_apply()`](https://deboonstra.github.io/satpt/reference/split_select_all_apply.html) helper does exactly this:
 
 ```{r}
-q1 <- satpt::split_select_all_apply(x = diagnoses$q1, sep = "|")
+q1 <- split_select_all_apply(x = diagnoses$q1, sep = "|")
 str(q1)
 ```
 
@@ -55,7 +55,7 @@ The `"select all that apply"` responses are now a collection of indicator column
 Pass the indicator data.frame straight to [`satpt::satpt()`](https://deboonstra.github.io/satpt/reference/satpt.html) with `select_all_apply = TRUE`:
 
 ```{r}
-res <- satpt::satpt(
+res <- satpt(
   y = q1,
   by = diagnoses$wave,
   select_all_apply = TRUE,
@@ -66,7 +66,7 @@ res <- satpt::satpt(
 )
 ```
 
-Each response field from the "select all that apply" question achieved saturation with a saturation threshold of 0.025, so the question has reached saturation.
+Each response field from the "select all that apply" question achieved saturation with the default saturation threshold (about 0.0255, the standard error that produces a 95% CI of width 0.1), so the question has reached saturation.
 
 ```{r}
 summary(res)
@@ -75,5 +75,5 @@ summary(res)
 If you are running a whole-survey analysis with [`satpt::satpt_survey()`](https://deboonstra.github.io/satpt/reference/satpt_survey.html), pass the same separator inline via the `split` argument and the conversion happens automatically:
 
 ```{r, eval = FALSE}
-satpt::satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
+satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
 ```

@@ -40,7 +40,7 @@ test_that("named dimnames must contain both 'y' and 'by'", {
 
 test_that("dimnames must be a character vector", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 50, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 50, prob = c(0.5, 0.5))
   expect_error(
     satpt::satpt(y = d$responses1, dimnames = 1L),
     "character"
@@ -56,7 +56,7 @@ test_that("y of an unsupported class is rejected with a list of valid types", {
 
 test_that("sanity warning fires for single-level by", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   expect_warning(
     satpt::satpt(y = d$responses1, by = rep(1L, length(d$responses1))),
     "by.*unique"
@@ -98,6 +98,6 @@ test_that("pipe warning fires when y is a select-all-apply string column", {
 
 test_that("pipe warning does not fire on healthy character data", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   expect_silent(satpt::satpt(y = d$responses1))
 })

@@ -22,9 +22,9 @@ coerce_responses <- function(y, var_name) {
   result <- try(
     expr = {
       if (is.atomic(x = y)) {
-        satpt::char_matrix(y = y, cname = var_name)
+        char_matrix(y = y, cname = var_name)
       } else {
-        satpt::char_matrix(y = y)
+        char_matrix(y = y)
       }
     },
     silent = TRUE
@@ -41,7 +41,7 @@ coerce_responses <- function(y, var_name) {
 # Coerce by to a character vector. Mirrors coerce_responses' error contract.
 coerce_grouping <- function(by) {
   result <- try(
-    expr = as.character(x = satpt::char_matrix(y = by)),
+    expr = as.character(x = char_matrix(y = by)),
     silent = TRUE
   )
   if (inherits(x = result, what = "try-error")) {

@@ -56,8 +56,10 @@
 #' data(diagnoses)
 #'
 #' # Analyze every question in the diagnoses survey, using `wave` to
-#' # detect response bias across data collection periods.
-#' satpt_survey(diagnoses, by = "wave")
+#' # detect response bias across data collection periods. q1 is a
+#' # select-all-that-apply question encoded as pipe-delimited strings,
+#' # so `split` is used to convert it before analysis.
+#' satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
 #'
 #' # Analyze a subset of questions; drill down into one.
 #' res <- satpt_survey(diagnoses, by = "wave", questions = "q2")
@@ -159,7 +161,7 @@ apply_split <- function(data, split, cols) {
     split <- split[setdiff(names(split), unknown)]
   }
   for (q in names(split)) {
-    data[[q]] <- satpt::split_select_all_apply(
+    data[[q]] <- split_select_all_apply(
       x = data[[q]],
       sep = split[[q]]
     )
@@ -194,7 +196,7 @@ run_one_question <- function(q, data, by_vec, ...) {
   y_q <- data[[q]]
   if (is.atomic(y_q) || is.factor(y_q)) {
     y_q <- data.frame(
-      setNames(list(y_q), q),
+      stats::setNames(list(y_q), q),
       stringsAsFactors = FALSE
     )
   }
@@ -204,7 +206,7 @@ run_one_question <- function(q, data, by_vec, ...) {
   if (!is.null(by_vec)) {
     call_args$by <- by_vec
   }
-  do.call(what = satpt::satpt, args = call_args)
+  do.call(what = satpt, args = call_args)
 }
 
 #' @rdname satpt_survey

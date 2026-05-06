@@ -44,10 +44,10 @@ levels(diagnoses$q2)
 The `res` object below is a `satpt` object that contains the results of the saturation point analysis and is structurely a *R* `list` with twelve elements produced by main function `satpt::satpt()`. You may see the [documentation of `satpt::satpt()`](https://deboonstra.github.io/satpt/reference/satpt.html) for a detailed description of all the elements of a `satpt` object.
 
 ```{r}
-res <- satpt::satpt(y = diagnoses$q2, threshold = 0.025)
+res <- satpt(y = diagnoses$q2)
 ```
 
-For a basic examination of the saturation point analysis, you may simply print the results object. This will provide information of whether the maximum standard errors of the response categories are less than or equal to the saturation threshold along with sample proportions and standard errors of the response categories. In this example, the default saturation threshold of 0.025 was used and the maximum standard error was less than 0.025. Thus, saturation of the response categories is achieved. 
+For a basic examination of the saturation point analysis, you may simply print the results object. This will provide information of whether the maximum standard errors of the response categories are less than or equal to the saturation threshold along with sample proportions and standard errors of the response categories. In this example, the default saturation threshold (about 0.0255 — see *Saturation thresholds* below) was used and the maximum standard error was less than that threshold. Thus, saturation of the response categories is achieved.
 
 ```{r}
 print(res)
@@ -67,7 +67,7 @@ Another way of examining saturation point analysis is graphical by plotting the 
 graphics::par(oma = c(0, 0, 0, 8))
 plot(res)
 # adding legend
-satpt::legend_right(
+legend_right(
   legend = "Saturation\nthreshold",
   col = "firebrick", lty = 3, lwd = 2,
   cex = 0.75
@@ -82,7 +82,7 @@ There will be times the data collection process leads to responses with the pote
 stats::ftable(x = diagnoses$wave)
 ```
 
-So, we are going to examine the responses collected in each wave for saturation, where the previous wave of responses will be included in the current wave and the *saturation threshold is 0.025*.
+So, we are going to examine the responses collected in each wave for saturation, where the previous wave of responses will be included in the current wave and the package's default *saturation threshold* is used.
 
 ### First data collection period
 
@@ -93,9 +93,8 @@ During the first data collection period, we are going to assume response bias is
 diagnoses1 <- subset(x = diagnoses, subset = wave == 1)
 
 # Performing saturation point analysis
-res1 <- satpt::satpt(
+res1 <- satpt(
   y = diagnoses1$q2,
-  threshold = 0.025,
   dimnames = "Responses to survey"
 )
 print(res1)
@@ -114,10 +113,9 @@ diagnoses2 <- subset(
 )
 
 # Performing saturation point analysis
-res2 <- satpt::satpt(
+res2 <- satpt(
   y = diagnoses2$q2,
   by = diagnoses2$wave,
-  threshold = 0.025,
   dimnames = c("by" = "Data collection period", "y" = "Responses to survey")
 )
 print(res2)
@@ -133,25 +131,26 @@ The above Pearson's $\chi^{2}$ test for independence shows that responses bias w
 
 # Saturation thresholds
 
-The default saturation threshold in [`satpt::satpt()`](https://deboonstra.github.io/satpt/reference/satpt.html) is 0.025 because this threshold for standard errors leads to a confidence interval width of 0.1 around the sample proportions. More specifically, for a $95\%$ confidence interval around the sample proportions that has a margin of error (**ME**) of approximately
+The default saturation threshold in [`satpt::satpt()`](https://deboonstra.github.io/satpt/reference/satpt.html) is `0.05 / qnorm(0.975)` (about `0.0255`) because this is the standard error that produces a $95\%$ confidence interval of total width 0.1 around each sample proportion. More specifically, for a $95\%$ confidence interval with a margin of error (**ME**) of 0.05,
 
 $$
-ME = 1.96 \times \text{SE} = 0.05
+ME = q \times \text{SE} = 0.05 \quad \Rightarrow \quad \text{SE} = \frac{0.05}{q}
 $$
 
-and a total width of 0.1, the *saturation threshold*, should be defined as 0.025. The table below provides more *saturation thresholds* based on confidence intervals that have a width of 0.1.
+where $q = z_{0.975} \approx 1.96$ is the relevant quantile of the standard normal. Solving for SE gives the saturation threshold $\approx 0.0255$. The table below provides more *saturation thresholds* based on confidence intervals that have a total width of 0.1.
 
 ```{r, echo = FALSE}
 if (requireNamespace("kableExtra", quietly = TRUE)) {
   library(kableExtra)
+  ci_levels <- c(0.90, 0.95, 0.99)
   dat <- data.frame(
-    ci_level = c("90%", "95%", "99%"),
-    threshold = c(0.038, 0.025, 0.21)
+    ci_level = paste0(format(100 * ci_levels), "%"),
+    threshold = 0.05 / qnorm(p = (1 + ci_levels) / 2)
   )
   tab <- knitr::kable(
     x = dat,
     format = "html",
-    digits = 3,
+    digits = 4,
     col.names = c("Confidence level", "Saturation threshold"),
     align = "cc"
   )

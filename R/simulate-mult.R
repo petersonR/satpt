@@ -1,7 +1,8 @@
 #' @title Simulation of multinomial responses
 #'
 #' @description Simulating the data of multinomial responses collected during a
-#' survey.
+#' survey. The function name is `simulate_mult()` (rather than `simulate()`) to
+#' avoid masking [stats::simulate()] when the package is attached.
 #'
 #' @param n Integer specifying the number of random samples to draw.
 #' @param size Vector of integer values, say \eqn{N_i}, specifying the
@@ -25,7 +26,7 @@
 #' rows and \emph{K} columns, where each row of the matrix specify the \emph{K}
 #' probabilities of each data collection period.
 #'
-#' When `categories` is not defined (`categories = NULL`) `simulate` will
+#' When `categories` is not defined (`categories = NULL`) `simulate_mult` will
 #' create default lables of \emph{Category k, } for \eqn{k = 1, \ldots , K}.
 #'
 #' @return A `data.frame` with \eqn{N = \sum_{i}N_{i}} rows and `n + 1`
@@ -42,7 +43,7 @@
 #' @examples
 #' # Creating 5 simulated data sets of with a sample size of 10, where there
 #' # are two possible response categories with a 50% chance of being selected.
-#' satpt::simulate(n = 5, size = 10, prob = c(0.5, 0.5))
+#' simulate_mult(n = 5, size = 10, prob = c(0.5, 0.5))
 #'
 #' # Creating 1 simulated data set for two data collection periods, where there
 #' # are three possible response categories that are labeled.
@@ -51,10 +52,10 @@
 #'   nrow = 2, ncol = 3, byrow = TRUE
 #' )
 #' catg <- LETTERS[1:3]
-#' satpt::simulate(n = 1, size = c(20, 10), prob = prob, categories = catg)
+#' simulate_mult(n = 1, size = c(20, 10), prob = prob, categories = catg)
 #'
 #' @export
-simulate <- function(n, size, prob, categories = NULL) {
+simulate_mult <- function(n, size, prob, categories = NULL) {
   validate_simulate_args(n = n, size = size, prob = prob)
 
   prob <- as_prob_matrix(prob = prob, size = size)

@@ -67,12 +67,12 @@ prob <- matrix(
 )
 catg <- LETTERS[1:3]
 set.seed(123)
-dat <- satpt::simulate(
+dat <- simulate_mult(
   n = 1, size = c(200, 100), prob = prob, categories = catg
 )
 
 ## Determining saturation with response bias and summarizing analysis
-res <- satpt::satpt(y = dat$responses1, by = dat$period)
+res <- satpt(y = dat$responses1, by = dat$period)
 summary(object = res, digits = 3)
 
 }

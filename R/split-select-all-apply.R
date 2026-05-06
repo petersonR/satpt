@@ -30,11 +30,11 @@
 #'
 #' @examples
 #' data(diagnoses)
-#' q1 <- satpt::split_select_all_apply(x = diagnoses$q1, sep = "|")
+#' q1 <- split_select_all_apply(x = diagnoses$q1, sep = "|")
 #' head(q1)
 #'
 #' # Feed straight into satpt():
-#' satpt::satpt(
+#' satpt(
 #'   y = q1, by = diagnoses$wave, select_all_apply = TRUE
 #' )
 #'

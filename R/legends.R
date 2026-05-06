@@ -14,7 +14,7 @@
 #' data(diagnoses)
 #'
 #' # performing saturation point analysis
-#' fit <- satpt::satpt(
+#' fit <- satpt(
 #'   y = diagnoses$q2,
 #'   by = diagnoses$wave,
 #'   dimnames = c("Response collected", "Collection period")
@@ -25,7 +25,7 @@
 #' plot(fit, threshold = TRUE)
 #'
 #' # adding legend
-#' satpt::legend_right(
+#' legend_right(
 #'   legend = "Saturation\nthreshold",
 #'   col = "firebrick", lty = 3, lwd = 2,
 #'   cex = 0.75

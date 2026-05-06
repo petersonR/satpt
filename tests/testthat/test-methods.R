@@ -1,6 +1,6 @@
 test_that("summary.satpt always exposes the 10 documented slots", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   s <- summary(res)
   expect_s3_class(s, "summary.satpt")
@@ -36,7 +36,7 @@ test_that("summary.satpt rejects non-satpt input", {
 
 test_that("print.satpt reports saturation status", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   out <- capture.output(print(res))
   # Headline says either "Saturation achieved" or "Saturation not yet
@@ -49,7 +49,7 @@ test_that("print.satpt drops redundant 'Analysis based on' / Yes-No lines", {
   # Both lines duplicated the headline information; they have been removed
   # in favor of the headline alone.
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 400, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 400, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = d$responses1)
   out <- capture.output(print(res))
   expect_false(any(grepl("Saturation achieved\\?", out)))
@@ -58,7 +58,7 @@ test_that("print.satpt drops redundant 'Analysis based on' / Yes-No lines", {
 
 test_that("print.satpt headline reports CI half-width when saturated", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 400, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 400, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = d$responses1)
   out <- capture.output(print(res))
   expect_true(any(grepl("Saturation achieved for", out)))
@@ -68,7 +68,7 @@ test_that("print.satpt headline reports CI half-width when saturated", {
 
 test_that("print.satpt headline reports n_to_saturation when not saturated", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = d$responses1)
   expect_gt(res$n_to_saturation, 0L)
   out <- capture.output(print(res))
@@ -93,7 +93,7 @@ test_that("print.satpt rejects non-satpt input", {
 
 test_that("plot.satpt draws without error on a valid satpt object", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   pdf(file = NULL)
   on.exit(dev.off(), add = TRUE)

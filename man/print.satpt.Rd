@@ -29,7 +29,7 @@ data(diagnoses)
 # so the standard errors will be the same.
 
 # Saving analysis as R object and printing
-res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
+res <- satpt(y = diagnoses$q2, by = diagnoses$wave)
 print(x = res, digits = 3)
 
 }

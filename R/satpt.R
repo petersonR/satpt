@@ -14,8 +14,10 @@
 #' @param alpha Significance level for test for independence by `y` and `by`.
 #' Default is `0.05`.
 #' @param threshold Saturation threshold applied to the maximum standard error
-#' of the sample proportions. Default is `0.025` and the threshold must be less
-#' or equal to 0.25.
+#' of the sample proportions. Default is `0.05 / qnorm(0.975)` (about
+#' `0.02551`), the standard error that produces a 95% confidence interval
+#' half-width of exactly 0.05 (a CI of total width 0.1). The threshold must
+#' be strictly less than 0.25.
 #' @param dimnames Character vector of names for `y` and `by` when
 #' displaying the contingency table, sample proportions, and standard error
 #' matrices. When `dimnames` is an unnamed vector the first entry should be name
@@ -161,12 +163,12 @@
 #' data(diagnoses)
 #'
 #' # Assuming response bias is not a possiblity
-#' satpt::satpt(y = diagnoses$q2)
+#' satpt(y = diagnoses$q2)
 #'
 #' # Examining saturation given data collected at different times and
 #' # response bias is possible. For this example, response bias is not present,
 #' # so the standard errors will be the same.
-#' satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
+#' satpt(y = diagnoses$q2, by = diagnoses$wave)
 #'
 #' # Creating an example, where response bias is present.
 #'
@@ -177,12 +179,12 @@
 #' )
 #' catg <- LETTERS[1:3]
 #' set.seed(123)
-#' dat <- satpt::simulate(
+#' dat <- simulate_mult(
 #'   n = 1, size = c(250, 100), prob = prob, categories = catg
 #' )
 #'
 #' ## Determining saturation with response bias
-#' res <- satpt::satpt(y = dat$responses1, by = dat$period)
+#' res <- satpt(y = dat$responses1, by = dat$period)
 #' summary(res)
 #'
 #' @rdname satpt
@@ -192,7 +194,7 @@ satpt <- function(
   by,
   exclude = c(NA, NaN),
   alpha = 0.05,
-  threshold = 0.025,
+  threshold = 0.05 / stats::qnorm(0.975),
   dimnames = NULL,
   select_all_apply = NULL,
   ...

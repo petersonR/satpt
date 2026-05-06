@@ -77,12 +77,12 @@ For a single question, `satpt()` shows category proportions, standard errors,
 and a plain-language headline:
 
 ```{r, eval = FALSE}
-res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
+res <- satpt(y = diagnoses$q2, by = diagnoses$wave)
 print(res)
 ```
 
 ```{r, echo = FALSE}
-res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
+res <- satpt(y = diagnoses$q2, by = diagnoses$wave)
 print(res)
 ```
 
@@ -91,9 +91,11 @@ exposes `res$n_to_saturation`. This is an estimate of how many additional respon
 are needed to bring the largest standard error below `threshold`, assuming
 current proportions hold.
 
-The default `threshold = 0.025` corresponds to 95% confidence intervals about
-±5 percentage points wide. Tighten it (e.g. `threshold = 0.01`) when you need
-finer precision; loosen it when wider intervals are acceptable.
+The default `threshold = 0.05 / qnorm(0.975)` (about `0.0255`) is the standard
+error that yields a 95% confidence interval half-width of exactly 0.05 — i.e.
+±5 percentage points around each proportion. Tighten it (e.g.
+`threshold = 0.01`) when you need finer precision; loosen it when wider
+intervals are acceptable.
 
 ## Plotting
 
@@ -104,7 +106,7 @@ while comparing the standard errors to the saturation threshold.
 graphics::par(oma = c(0, 0, 0, 8))
 plot(res)
 # adding legend
-satpt::legend_right(
+legend_right(
   legend = "Saturation\nthreshold",
   col = "firebrick", lty = 3, lwd = 2,
   cex = 0.75

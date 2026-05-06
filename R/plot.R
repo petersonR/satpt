@@ -15,8 +15,8 @@
 #' data(diagnoses)
 #'
 #' # performing saturation point analysis
-#' fit1 <- satpt::satpt(y = diagnoses$q2)
-#' fit2 <- satpt::satpt(
+#' fit1 <- satpt(y = diagnoses$q2)
+#' fit2 <- satpt(
 #'   y = diagnoses$q2,
 #'   by = diagnoses$wave,
 #'   dimnames = c("Response collected", "Collection period"),

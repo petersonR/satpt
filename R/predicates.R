@@ -10,8 +10,8 @@
 #'
 #' @examples
 #' data(diagnoses)
-#' res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
-#' if (satpt::is_saturated(res)) {
+#' res <- satpt(y = diagnoses$q2, by = diagnoses$wave)
+#' if (is_saturated(res)) {
 #'   message("done collecting q2")
 #' } else {
 #'   message("collect ~", res$n_to_saturation, " more responses")

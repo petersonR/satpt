@@ -73,8 +73,10 @@ objects, available for drill-down).
 data(diagnoses)
 
 # Analyze every question in the diagnoses survey, using `wave` to
-# detect response bias across data collection periods.
-satpt_survey(diagnoses, by = "wave")
+# detect response bias across data collection periods. q1 is a
+# select-all-that-apply question encoded as pipe-delimited strings,
+# so `split` is used to convert it before analysis.
+satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
 
 # Analyze a subset of questions; drill down into one.
 res <- satpt_survey(diagnoses, by = "wave", questions = "q2")

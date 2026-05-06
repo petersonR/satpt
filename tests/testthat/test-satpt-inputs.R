@@ -1,6 +1,6 @@
 test_that("y as a factor produces the same result as y as character", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res_char <- satpt::satpt(y = d$responses1)
   res_fac <- satpt::satpt(y = factor(d$responses1))
   expect_equal(res_char$saturation, res_fac$saturation)
@@ -21,7 +21,7 @@ test_that("which_saturation is clean when y is wrapped in a function call", {
   # "responses1)". The replacement extractor strips through the last `$` and
   # then keeps only the leading R identifier.
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = factor(d$responses1))
   expect_equal(res$which_saturation, "responses1")
 })
@@ -133,7 +133,7 @@ test_that("select_all_apply = FALSE errors on multi-column y", {
 
 test_that("single-column y is unaffected by the guard", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   expect_silent(satpt::satpt(y = d$responses1))
   expect_silent(satpt::satpt(y = d$responses1, select_all_apply = FALSE))
 })

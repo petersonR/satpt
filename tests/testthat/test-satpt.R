@@ -1,6 +1,6 @@
 test_that("satpt without by leaves test, hindex, and pooled_se NULL", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   expect_s3_class(res, "satpt")
   expect_null(res$test)
@@ -10,7 +10,7 @@ test_that("satpt without by leaves test, hindex, and pooled_se NULL", {
 
 test_that("satpt without by has a single-row phat that sums to 1", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   expect_equal(nrow(res$phat), 1L)
   expect_equal(sum(res$phat), 1)
@@ -18,7 +18,7 @@ test_that("satpt without by has a single-row phat that sums to 1", {
 
 test_that("standard errors equal sqrt(p*(1-p)/n) per category", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 400, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 400, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   p <- as.vector(res$phat)
   expected_se <- sqrt(p * (1 - p) / res$n)
@@ -27,21 +27,21 @@ test_that("standard errors equal sqrt(p*(1-p)/n) per category", {
 
 test_that("counts column sum equals the reported sample size n", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
+  d <- simulate_mult(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   expect_equal(sum(res$counts), res$n)
 })
 
 test_that("which_saturation echoes the user-supplied y variable name", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = d$responses1)
   expect_equal(res$which_saturation, "responses1")
 })
 
 test_that("n_to_saturation is 0 when saturation has been reached", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 400, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 400, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = d$responses1)
   expect_true(res$saturation)
   expect_equal(res$n_to_saturation, 0L)
@@ -51,7 +51,7 @@ test_that("n_to_saturation matches the n*(SE/threshold)^2 projection", {
   # With N=100 at p=0.5 and threshold=0.025: SE=0.05, k=(0.05/0.025)^2=4,
   # so we need 4*N = 400 responses total -> 300 more.
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   res <- satpt::satpt(y = d$responses1)
   expect_false(res$saturation)
   # phat from the random sample is close to but not exactly 0.5; recompute.
@@ -61,7 +61,7 @@ test_that("n_to_saturation matches the n*(SE/threshold)^2 projection", {
 
 test_that("loosening the threshold flips a non-saturated case to saturated", {
   set.seed(1)
-  d <- satpt::simulate(n = 1, size = 100, prob = c(0.5, 0.5))
+  d <- simulate_mult(n = 1, size = 100, prob = c(0.5, 0.5))
   # With N=100 at p=0.5, SE = sqrt(0.25/100) = 0.05, well above 0.025.
   res_strict <- satpt::satpt(y = d$responses1)
   res_loose <- satpt::satpt(y = d$responses1, threshold = 0.06)

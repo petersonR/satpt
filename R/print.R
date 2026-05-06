@@ -15,7 +15,7 @@
 #' # so the standard errors will be the same.
 #'
 #' # Saving analysis as R object and printing
-#' res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
+#' res <- satpt(y = diagnoses$q2, by = diagnoses$wave)
 #' print(x = res, digits = 3)
 #'
 #' @export
@@ -63,15 +63,15 @@ saturation_headline <- function(x) {
     paste0(
       "Saturation achieved for ", x$which_saturation, ".\n",
       "With ", x$n, " responses, the largest 95% CI half-width is ",
-      "±", pp(half_width), " percentage points (within the ",
-      "±", pp(threshold_hw), " pp threshold)."
+      "\u00b1", pp(half_width), " percentage points (within the ",
+      "\u00b1", pp(threshold_hw), " pp threshold)."
     )
   } else {
     paste0(
       "Saturation not yet achieved for ", x$which_saturation, ".\n",
       "With ", x$n, " responses, the largest 95% CI half-width is ",
-      "±", pp(half_width), " percentage points (threshold ",
-      "±", pp(threshold_hw), " pp).\n",
+      "\u00b1", pp(half_width), " percentage points (threshold ",
+      "\u00b1", pp(threshold_hw), " pp).\n",
       "About ", x$n_to_saturation,
       " more responses needed (assuming current proportions hold)."
     )
