@@ -17,6 +17,13 @@
 #' @param questions Optional character vector of column names from `data`
 #' to analyze. Default analyzes every column other than the column named
 #' in `by` (when `by` is a column name).
+#' @param split Optional named list (or named character vector) of
+#' separators for select-all-that-apply questions encoded as a single
+#' delimited string per response. For example,
+#' `split = list(q1 = "|")` tells `satpt_survey()` to run
+#' [satpt::split_select_all_apply()] on `data$q1` with `sep = "|"` before
+#' the analysis, so each unique response token becomes its own indicator
+#' column. Names not present in `data` are ignored with a warning.
 #' @param ... Additional arguments forwarded to [satpt::satpt()] for every
 #' question (e.g. `threshold`, `alpha`, `exclude`).
 #'
@@ -57,12 +64,17 @@
 #' res$results$q2
 #'
 #' @export
-satpt_survey <- function(data, by = NULL, questions = NULL, ...) {
+satpt_survey <- function(data, by = NULL, questions = NULL,
+                         split = NULL, ...) {
   cols <- list_columns(data)
 
   parsed <- resolve_by(data = data, by = by, cols = cols)
   by_vec <- parsed$by_vec
   by_col_name <- parsed$by_col_name
+
+  if (!is.null(split)) {
+    data <- apply_split(data = data, split = split, cols = cols)
+  }
 
   if (is.null(questions)) {
     questions <- setdiff(cols, by_col_name)
@@ -123,6 +135,38 @@ list_columns <- function(data) {
   stop("data must be a data.frame or named list.")
 }
 
+# Internal: validate the split argument and apply
+# split_select_all_apply() to each named question column. Returns the
+# data with the targeted columns replaced by indicator data.frames.
+apply_split <- function(data, split, cols) {
+  if (!is.list(split)) {
+    if (is.character(split) && !is.null(names(split))) {
+      split <- as.list(split)
+    } else {
+      stop("split must be a named list or named character vector.")
+    }
+  }
+  if (is.null(names(split)) || any(!nzchar(names(split)))) {
+    stop("Every element of split must be named with a question column.")
+  }
+  unknown <- setdiff(names(split), cols)
+  if (length(unknown) > 0L) {
+    warning(
+      "Ignoring split entries for columns not in data: ",
+      paste(unknown, collapse = ", "),
+      call. = FALSE
+    )
+    split <- split[setdiff(names(split), unknown)]
+  }
+  for (q in names(split)) {
+    data[[q]] <- satpt::split_select_all_apply(
+      x = data[[q]],
+      sep = split[[q]]
+    )
+  }
+  data
+}
+
 # Internal: resolve the `by` argument to an external vector and the name
 # of the column inside `data` (when applicable, so it can be excluded
 # from the question loop).
@@ -139,12 +183,23 @@ resolve_by <- function(data, by, cols) {
   list(by_vec = by, by_col_name = NULL)
 }
 
-# Internal: run satpt() on a single question column. Always passes
-# select_all_apply = TRUE so multi-column items (select-all-that-apply
-# questions) don't trigger the wide-y warning here.
+# Internal: run satpt() on a single question column. Wraps atomic
+# columns in a 1-column data.frame so satpt() sees the question's column
+# name — without this, satpt()'s deparse-based name extraction lands on
+# the do.call literal (e.g. "c") rather than the question name. Always
+# passes select_all_apply = TRUE so genuinely multi-column items (select-
+# all-that-apply questions stored as nested data.frames) don't trigger
+# the wide-y warning here.
 run_one_question <- function(q, data, by_vec, ...) {
+  y_q <- data[[q]]
+  if (is.atomic(y_q) || is.factor(y_q)) {
+    y_q <- data.frame(
+      setNames(list(y_q), q),
+      stringsAsFactors = FALSE
+    )
+  }
   call_args <- list(...)
-  call_args$y <- data[[q]]
+  call_args$y <- y_q
   call_args$select_all_apply <- TRUE
   if (!is.null(by_vec)) {
     call_args$by <- by_vec

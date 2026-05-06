@@ -39,7 +39,21 @@ test_that("print.satpt reports saturation status", {
   d <- satpt::simulate(n = 1, size = 200, prob = rep(0.25, 4))
   res <- satpt::satpt(y = d$responses1)
   out <- capture.output(print(res))
-  expect_true(any(grepl("Saturation achieved", out)))
+  # Headline says either "Saturation achieved" or "Saturation not yet
+  # achieved", depending on the outcome — both contain "Saturation".
+  expect_true(any(grepl("Saturation", out)))
+  expect_true(any(grepl("Overall Sample Proportions", out)))
+})
+
+test_that("print.satpt drops redundant 'Analysis based on' / Yes-No lines", {
+  # Both lines duplicated the headline information; they have been removed
+  # in favor of the headline alone.
+  set.seed(1)
+  d <- satpt::simulate(n = 1, size = 400, prob = c(0.5, 0.5))
+  res <- satpt::satpt(y = d$responses1)
+  out <- capture.output(print(res))
+  expect_false(any(grepl("Saturation achieved\\?", out)))
+  expect_false(any(grepl("Analysis based on:", out)))
 })
 
 test_that("print.satpt headline reports CI half-width when saturated", {

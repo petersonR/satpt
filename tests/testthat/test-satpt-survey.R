@@ -1,7 +1,10 @@
 test_that("satpt_survey returns a satpt_survey object with summary + results", {
   e <- new.env()
   data(diagnoses, package = "satpt", envir = e)
-  res <- satpt::satpt_survey(e$diagnoses, by = "wave")
+  res <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|")
+  )
   expect_s3_class(res, "satpt_survey")
   expect_named(res, c("summary", "results"))
   expect_s3_class(res$summary, "data.frame")
@@ -14,7 +17,10 @@ test_that("satpt_survey returns a satpt_survey object with summary + results", {
 test_that("satpt_survey runs every column other than `by` by default", {
   e <- new.env()
   data(diagnoses, package = "satpt", envir = e)
-  res <- satpt::satpt_survey(e$diagnoses, by = "wave")
+  res <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|")
+  )
   expect_setequal(res$summary$question, c("q1", "q2"))
   expect_equal(nrow(res$summary), 2L)
 })
@@ -42,7 +48,10 @@ test_that("satpt_survey accepts an external `by` vector", {
 test_that("satpt_survey results match per-question satpt() calls", {
   e <- new.env()
   data(diagnoses, package = "satpt", envir = e)
-  res_survey <- satpt::satpt_survey(e$diagnoses, by = "wave")
+  res_survey <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|")
+  )
   res_q2 <- satpt::satpt(y = e$diagnoses$q2, by = e$diagnoses$wave)
   expect_equal(res_survey$results$q2$n, res_q2$n)
   expect_equal(res_survey$results$q2$saturation, res_q2$saturation)
@@ -57,7 +66,10 @@ test_that("satpt_survey forwards `...` to satpt() (e.g. threshold)", {
   data(diagnoses, package = "satpt", envir = e)
   # Tightening threshold below the actual max SE should flip saturation off
   # for every question.
-  res <- satpt::satpt_survey(e$diagnoses, by = "wave", threshold = 0.001)
+  res <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|"), threshold = 0.001
+  )
   expect_true(all(!res$summary$saturation))
   expect_true(all(res$summary$n_to_saturation > 0L))
 })
@@ -97,7 +109,10 @@ test_that("satpt_survey rejects unnamed list elements", {
 test_that("print.satpt_survey shows headline and outstanding-question list", {
   e <- new.env()
   data(diagnoses, package = "satpt", envir = e)
-  res <- satpt::satpt_survey(e$diagnoses, by = "wave", threshold = 0.001)
+  res <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|"), threshold = 0.001
+  )
   out <- capture.output(print(res))
   expect_true(any(grepl("0 of 2 questions saturated", out)))
   expect_true(any(grepl("Outstanding", out)))
@@ -109,10 +124,80 @@ test_that("print.satpt_survey shows headline and outstanding-question list", {
 test_that("print.satpt_survey omits the outstanding line when all saturate", {
   e <- new.env()
   data(diagnoses, package = "satpt", envir = e)
-  res <- satpt::satpt_survey(e$diagnoses, by = "wave")
+  res <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|")
+  )
   out <- capture.output(print(res))
   expect_true(any(grepl("2 of 2 questions saturated", out)))
   expect_false(any(grepl("Outstanding", out)))
+})
+
+test_that("satpt_survey split arg converts pipe-encoded columns inline", {
+  e <- new.env()
+  data(diagnoses, package = "satpt", envir = e)
+
+  # The no-split call deliberately fires the pipe-encoded warning.
+  res_no_split <- suppressWarnings(
+    satpt::satpt_survey(e$diagnoses, by = "wave")
+  )
+  res_split <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|")
+  )
+  # Without splitting, satpt() sees q1 as a single multiple-choice column
+  # so limiting_item == "q1". With splitting, q1 becomes 5 indicator
+  # columns and limiting_item is the response item closest to p = 0.5.
+  expect_equal(res_no_split$results$q1$limiting_item, "q1")
+  expect_true(
+    res_split$results$q1$limiting_item %in%
+      c("Broadrange", "Wholegenome", "MNGS", "None", "Other")
+  )
+})
+
+test_that("satpt_survey split arg matches pre-splitting the data manually", {
+  e <- new.env()
+  data(diagnoses, package = "satpt", envir = e)
+
+  res_inline <- satpt::satpt_survey(
+    e$diagnoses,
+    by = "wave", split = list(q1 = "|")
+  )
+  e$diagnoses$q1 <- satpt::split_select_all_apply(
+    e$diagnoses$q1,
+    sep = "|"
+  )
+  res_manual <- satpt::satpt_survey(e$diagnoses, by = "wave")
+  expect_equal(
+    res_inline$summary$saturation,
+    res_manual$summary$saturation
+  )
+  expect_equal(
+    res_inline$summary$max_se,
+    res_manual$summary$max_se
+  )
+})
+
+test_that("satpt_survey split warns about unknown question names", {
+  e <- new.env()
+  data(diagnoses, package = "satpt", envir = e)
+  expect_warning(
+    satpt::satpt_survey(
+      e$diagnoses,
+      by = "wave",
+      split = list(q1 = "|", q42 = "|")
+    ),
+    "q42"
+  )
+})
+
+test_that("satpt_survey split rejects unnamed split entries", {
+  e <- new.env()
+  data(diagnoses, package = "satpt", envir = e)
+  expect_error(
+    satpt::satpt_survey(e$diagnoses, by = "wave", split = list("|")),
+    "named"
+  )
 })
 
 test_that("satpt_survey forwards select-all-apply columns without warning", {

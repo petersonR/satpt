@@ -57,7 +57,7 @@ should \strong{not} be spectified because the \code{by} and \code{y} from argume
 will create a contingency matrix to perform the test of independence on.}
 }
 \value{
-An object with \code{S3} class \code{"satpt"} containing 13 elements. The
+An object with \code{S3} class \code{"satpt"} containing 14 elements. The
 return elements in a \code{"satpt"} object are based on the response item that
 had the largest standard error. The \code{which_saturation} returned value
 indicates which response item had the largest standard error. This nature
@@ -76,6 +76,11 @@ responses within \code{y} determined saturation achievement. Generally, this is
 only of importance when examining select all apply questions. For
 multiple choice type of question, the returned value should just be the
 object name.}
+\item{\code{limiting_item}}{Synonym for \code{which_saturation} that reads more
+naturally for select-all-that-apply questions: it is the response item
+whose precision is the bottleneck. Once its standard error falls below
+\code{threshold}, every other response item already has too. New code should
+prefer \code{limiting_item}; \code{which_saturation} is kept for back-compat.}
 \item{\code{counts}}{A \code{matrix} object containing the observed cell
 counts of the contigency table created by \code{y} and \code{by} if provided.}
 \item{\code{phat}}{A \code{matrix} object containing the row-wise sample

@@ -47,16 +47,6 @@ print.satpt <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
   # Printing results ####
   cat(saturation_headline(x), "\n\n", sep = "")
-  cat("Analysis based on:", x$which_saturation, "\n")
-  cat(
-    "Saturation achieved? ",
-    ifelse(
-      test = x$saturation,
-      yes = "Yes",
-      no = "No"
-    ),
-    "\n\n"
-  )
   cat("Overall Sample Proportions and Standard Errors\n")
   cat("==============================================\n")
   print(x = print_table, ...)

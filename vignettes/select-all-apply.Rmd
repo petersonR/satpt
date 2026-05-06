@@ -35,7 +35,7 @@ head(diagnoses$q1)
 tail(diagnoses$q1)
 ```
 
-From the original survey, [*Difficult Diagnoses*](https://ein.idsociety.org/surveys/survey/166/), we know that the reported values relate to survery responses in this manner.
+From the original survey, [*Difficult Diagnoses*](https://ein.idsociety.org/surveys/survey/166/), we know the reported values relate to survey responses in this manner.
 
 - `"Broadrange"`: Broad range 16S rRNA gene sequencing
 - `"Wholegenome"`: Whole genome sequencing
@@ -43,62 +43,22 @@ From the original survey, [*Difficult Diagnoses*](https://ein.idsociety.org/surv
 - `"None"`: None of the above
 - `"Other"`: Other, specify
 
-So, we need to split the string of reponses based on the vertical pipe delimiter for each response.
+To analyze each response item separately we need to convert this single string column into a `data.frame` with one indicator column per response. The exported [`split_select_all_apply()`](https://deboonstra.github.io/satpt/reference/split_select_all_apply.html) helper does exactly this:
 
 ```{r}
-q1_split <- strsplit(x = diagnoses$q1, split = "|", fixed = TRUE)
-```
-
-With each response to the survey being represented as an element of character vectors in `q1`, we are going to create five indicator functions that denote whether one of the options were selected for a given response to the survey. We are transforming to indicator functions because the methodology proposed in the paper that accompanies this package demonstrates that "select all that apply" questions can be viewed a collection Poisson distributions. When each one of these distributions are conditioned on by the sum of Poisson distributions the result is a binomial distribution. So, the code below demonstrates one way to create these indicators functions for each of the possible response fields.
-```{r}
-# Identifying response field selected for each observation
-q1 <- lapply(
-  X = q1_split,
-  FUN = function(x) {
-    if (!all(is.na(x))) {
-      broadrange <- ifelse(test = "Broadrange" %in% x, yes = 1, no = 0)
-      wholegenome <- ifelse(test = "Wholegenome" %in% x, yes = 1, no = 0)
-      mngs <- ifelse(test = "MNGS" %in% x, yes = 1, no = 0)
-      none <- ifelse(test = "None" %in% x, yes = 1, no = 0)
-      other <- ifelse(test = "Other" %in% x, yes = 1, no = 0)
-    } else {
-      broadrange <- NA
-      wholegenome <- NA
-      mngs <- NA
-      none <- NA
-      other <- NA
-    }
-    out <- data.frame(
-      broadrange = broadrange,
-      wholegenome = wholegenome,
-      mngs = mngs,
-      none = none,
-      other = other
-    )
-    return(out)
-  }
-)
-
-# Combine vector of indicator values into a single data object
-q1 <- do.call(what = "rbind", args = q1)
-
-# Turning indicator functions in factor
-for (j in seq_len(ncol(q1))) {
-  q1[, j] <- factor(x = q1[, j], levels = c(0, 1), labels = c("No", "Yes"))
-}
-```
-
-The "select all that apply" response are now transformed into a collection of indicator functions, where the value `"Yes"` denotes that response field was selected and `"No"` denotes the response field was **not** selected. These responses were collected in different data collection periods due to non-response of previous collection periods. Thus, we must use the `wave` variable in the `diagnoses` data, so we may conduct saturation point analysis on each of the response fields while controlling for potiental response bias.
-
-```{r}
+q1 <- satpt::split_select_all_apply(x = diagnoses$q1, sep = "|")
 str(q1)
 ```
 
-Using the [`satpt::satpt()`](https://deboonstra.github.io/satpt/reference/satpt.html) function on each of the indicator functions of the responses field, we will perform the saturation point analysis.
+The `"select all that apply"` responses are now a collection of indicator columns, where `"Yes"` denotes that response field was selected and `"No"` denotes it was not. These responses were collected in different data collection periods due to non-response in earlier waves, so we use the `wave` variable in `diagnoses` to control for potential response bias.
+
+Pass the indicator data.frame straight to [`satpt::satpt()`](https://deboonstra.github.io/satpt/reference/satpt.html) with `select_all_apply = TRUE`:
+
 ```{r}
 res <- satpt::satpt(
   y = q1,
   by = diagnoses$wave,
+  select_all_apply = TRUE,
   dimnames = c(
     "by" = "Data collection period",
     "y" = "Responses to survey"
@@ -106,8 +66,14 @@ res <- satpt::satpt(
 )
 ```
 
-Finally, in the results below, we see that each response field from the "select all that apply" question achieved saturation with a saturation threshold of 0.025. Thus, this question has achieved saturation.
+Each response field from the "select all that apply" question achieved saturation with a saturation threshold of 0.025, so the question has reached saturation.
 
 ```{r}
 summary(res)
+```
+
+If you are running a whole-survey analysis with [`satpt::satpt_survey()`](https://deboonstra.github.io/satpt/reference/satpt_survey.html), pass the same separator inline via the `split` argument and the conversion happens automatically:
+
+```{r, eval = FALSE}
+satpt::satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
 ```

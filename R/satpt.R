@@ -95,7 +95,7 @@
 #' responses that have the largest standard error (i.e., a sample proportion
 #' closest to 0.5) will be used to determine saturation of all responses.
 #'
-#' @return An object with `S3` class `"satpt"` containing 13 elements. The
+#' @return An object with `S3` class `"satpt"` containing 14 elements. The
 #' return elements in a `"satpt"` object are based on the response item that
 #' had the largest standard error. The `which_saturation` returned value
 #' indicates which response item had the largest standard error. This nature
@@ -114,6 +114,11 @@
 #'  only of importance when examining select all apply questions. For
 #'  multiple choice type of question, the returned value should just be the
 #'  object name.}
+#'  \item{`limiting_item`}{Synonym for `which_saturation` that reads more
+#'  naturally for select-all-that-apply questions: it is the response item
+#'  whose precision is the bottleneck. Once its standard error falls below
+#'  `threshold`, every other response item already has too. New code should
+#'  prefer `limiting_item`; `which_saturation` is kept for back-compat.}
 #'  \item{`counts`}{A `matrix` object containing the observed cell
 #'  counts of the contigency table created by `y` and `by` if provided.}
 #'  \item{`phat`}{A `matrix` object containing the row-wise sample
@@ -214,6 +219,9 @@ satpt <- function(
     dimnames = dimnames
   )
 
+  # Flag degenerate inputs that produce uninformative or surprising results ####
+  sanity_check_inputs(y = y, by = by)
+
   # Per-column analysis ####
   dots <- list(...)
   counts <- lapply(
@@ -290,6 +298,7 @@ satpt <- function(
     threshold = threshold,
     saturation = saturation,
     which_saturation = which_saturation,
+    limiting_item = which_saturation,
     counts = counts[[which_saturation]],
     phat = phat[[which_saturation]],
     se = se[[which_saturation]],

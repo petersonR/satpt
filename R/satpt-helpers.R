@@ -83,6 +83,69 @@ check_select_all_apply <- function(y, select_all_apply) {
   invisible(NULL)
 }
 
+# Warn about degenerate inputs that satpt() will technically handle but
+# whose results are misleading. The function continues either way; users
+# may suppress these via suppressWarnings() if intentional.
+sanity_check_inputs <- function(y, by) {
+  if (!is.null(by)) {
+    by_levels <- unique(by[!is.na(by)])
+    if (length(by_levels) <= 1L) {
+      warning(
+        "`by` has ", length(by_levels),
+        " unique non-NA level(s); the test for response bias requires",
+        " at least 2. The analysis will proceed as if `by` were not",
+        " specified.",
+        call. = FALSE
+      )
+    }
+  }
+  for (j in seq_len(ncol(y))) {
+    col <- y[, j]
+    n_unique <- length(unique(col[!is.na(col)]))
+    if (n_unique <= 1L) {
+      col_label <- if (ncol(y) > 1L) {
+        paste0("Column '", colnames(y)[j], "'")
+      } else {
+        "y"
+      }
+      warning(
+        col_label, " has ", n_unique,
+        " unique non-NA value(s); saturation will fire trivially and",
+        " the analysis will not be informative.",
+        call. = FALSE
+      )
+    }
+    flag_pipe_encoded(col = col, col_label_fn = function() {
+      if (ncol(y) > 1L) paste0("Column '", colnames(y)[j], "'") else "y"
+    })
+  }
+  invisible(NULL)
+}
+
+# Warn when a single response column appears to be a select-all-that-apply
+# question encoded as one '|'-delimited string per row. Pipes are rare in
+# free text so a high prevalence is a reliable signal; ',' and ';' are
+# noisier and not flagged here.
+flag_pipe_encoded <- function(col, col_label_fn) {
+  non_na <- col[!is.na(col)]
+  if (length(non_na) == 0L) {
+    return(invisible(NULL))
+  }
+  pipe_rate <- mean(grepl(pattern = "|", x = non_na, fixed = TRUE))
+  if (pipe_rate > 0.1) {
+    warning(
+      col_label_fn(), " has '|' in ",
+      round(pipe_rate * 100), "% of non-NA values; this often indicates",
+      " a select-all-that-apply question encoded as one string. Convert",
+      " it with split_select_all_apply() (or pass split = list(<col> =",
+      " '|') to satpt_survey()) to analyze each response item",
+      " separately.",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
 validate_alpha <- function(alpha) {
   if (!is.numeric(x = alpha) || alpha >= 1 || alpha <= 0) {
     stop("alpha must be numeric between 0 and 1.")

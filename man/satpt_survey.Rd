@@ -5,7 +5,7 @@
 \alias{print.satpt_survey}
 \title{Saturation point analysis across an entire survey}
 \usage{
-satpt_survey(data, by = NULL, questions = NULL, ...)
+satpt_survey(data, by = NULL, questions = NULL, split = NULL, ...)
 
 \method{print}{satpt_survey}(x, ...)
 }
@@ -24,6 +24,14 @@ same way \code{\link[=satpt]{satpt()}} behaves when \code{by} is omitted.}
 \item{questions}{Optional character vector of column names from \code{data}
 to analyze. Default analyzes every column other than the column named
 in \code{by} (when \code{by} is a column name).}
+
+\item{split}{Optional named list (or named character vector) of
+separators for select-all-that-apply questions encoded as a single
+delimited string per response. For example,
+\code{split = list(q1 = "|")} tells \code{satpt_survey()} to run
+\code{\link[=split_select_all_apply]{split_select_all_apply()}} on \code{data$q1} with \code{sep = "|"} before
+the analysis, so each unique response token becomes its own indicator
+column. Names not present in \code{data} are ignored with a warning.}
 
 \item{...}{Additional arguments forwarded to \code{\link[=satpt]{satpt()}} for every
 question (e.g. \code{threshold}, \code{alpha}, \code{exclude}).}

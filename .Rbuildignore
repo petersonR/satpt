@@ -7,3 +7,5 @@
 ^data-raw$
 ^scripts$
 ^.lintr$
+^doc$
+^Meta$

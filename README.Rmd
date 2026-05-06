@@ -11,6 +11,8 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+suppressPackageStartupMessages(library(satpt))
+data(diagnoses)
 ```
 
 # satpt
@@ -19,10 +21,24 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/deboonstra/satpt/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/deboonstra/satpt/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-This *R* package identifies the saturation point of multinomial responses from a survey using standard errors of sample proportions.
+`satpt` helps you decide when your survey has collected enough responses to
+stop. Given the responses to one or more questions, it computes how precisely
+you have measured each response category and tells you whether further data
+collection is likely to change the picture, and if not, about how many more
+responses would.
+
+## When does this help?
+
+Use `satpt` when you have a convenience-sample survey (members of a
+professional society, patients of a particular health system, etc.) where
+chasing higher response rates is expensive or distorting. Instead of asking
+*"have we hit our response-rate target?"*, `satpt` asks *"are our proportions
+precise enough to act on?"*
 
 ## Installation
-You can install the current stable released version of `satpt` from [CRAN](https://cran.r-project.org) with
+
+You can install the current stable released version of `satpt` from
+[CRAN](https://cran.r-project.org) with
 
 ```{r, eval = FALSE}
 install.packages("satpt")
@@ -38,23 +54,51 @@ To get a bug fix or to use a feature from the development version, you can insta
 remotes::install_github("deboonstra/satpt")
 ```
 
-## Usage
+## Quick start
 
-For basic usage of `satpt` simply specify the responses of the survey in `y` and the data collection period information in `by`, as seen below. 
+The most common task is "of all the questions in my survey, which have
+stabilized and which haven't?" `satpt_survey()` answers this in one call.
+The `split` argument handles select-all-that-apply questions whose
+responses are stored as a single delimited string per row (here, `q1`'s
+five tokens are separated by `|`):
+
 ```{r, eval = FALSE}
-library(satpt) # load package
-data(diagnoses) # load example diagnoses data
+library(satpt)
+data(diagnoses) # example: a 643-respondent survey collected in waves
+
+satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
+```
+
+```{r, echo = FALSE}
+satpt_survey(diagnoses, by = "wave", split = list(q1 = "|"))
+```
+
+For a single question, `satpt()` shows category proportions, standard errors,
+and a plain-language headline:
+
+```{r, eval = FALSE}
 res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
 print(res)
 ```
 
 ```{r, echo = FALSE}
-data(diagnoses)
 res <- satpt::satpt(y = diagnoses$q2, by = diagnoses$wave)
 print(res)
 ```
 
-Saturation of each individual response category may be examined graphically while comparing the standard errors to the saturation threshold.
+When `satpt()` reports a question is *not* yet saturated, the result also
+exposes `res$n_to_saturation`. This is an estimate of how many additional responses
+are needed to bring the largest standard error below `threshold`, assuming
+current proportions hold.
+
+The default `threshold = 0.025` corresponds to 95% confidence intervals about
+±5 percentage points wide. Tighten it (e.g. `threshold = 0.01`) when you need
+finer precision; loosen it when wider intervals are acceptable.
+
+## Plotting
+
+Saturation of each individual response category may be examined graphically
+while comparing the standard errors to the saturation threshold.
 
 ```{r, eval = FALSE}
 graphics::par(oma = c(0, 0, 0, 8))
@@ -77,4 +121,11 @@ Presented below is a simplified version of the algorithm that is employed in `sa
 
 ## Learn more
 
-To get started, first read the [*Getting started with satpt*](https://deboonstra.github.io/satpt/articles/getting-started.html) vignette. Then, read more about how `satpt` may handle *Select All Apply* questions in the [*Impelementing with select all apply questions*](https://deboonstra.github.io/satpt/articles/select-all-apply.html) vignette.
+After installing, you can pull up the package's vignettes locally:
+
+```{r, eval = FALSE}
+vignette("getting-started", package = "satpt")
+vignette("select-all-apply", package = "satpt")
+```
+
+The same vignettes are available online: [*Getting started with satpt*](https://deboonstra.github.io/satpt/articles/getting-started.html) and [*Implementing with select-all-apply questions*](https://deboonstra.github.io/satpt/articles/select-all-apply.html).
